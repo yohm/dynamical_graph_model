@@ -1,6 +1,8 @@
 # dynamical_graph_model
 
-Simulation code of the dynamical graph model proposed in the paper Y. Murase et al., New J. Phys. (2010).
+Simulation code of the dynamical graph model proposed in the paper
+Y. Murase et al., "A simple model for skewed species-lifetime distributions", New J. Phys. (2010).
+http://iopscience.iop.org/article/10.1088/1367-2630/12/6/063021
 
 # Usage
 
