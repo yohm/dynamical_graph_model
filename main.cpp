@@ -7,6 +7,7 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <boost/timer.hpp>
 #include "dynamical_graph_model.cpp"
 
 int main (int argc, char* argv[]) {

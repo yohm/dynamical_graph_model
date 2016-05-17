@@ -1,11 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <list>
 #include <set>
 #include <map>
 #include <boost/cstdint.hpp>
-#include <boost/timer.hpp>
 #include <boost/random.hpp>
 
 //================================================
