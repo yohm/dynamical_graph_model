@@ -29,8 +29,19 @@ to install gnuplot. Ruby is installed by default.
 
 ## Build & Run
 
-To build the simulation code, run `make`.
-After the program was built, execute `./run.sh` and you'll find the simulation data as well as png files of the plots of results.
+To build the simulation code, run
+
+```make```
+
+After the program was built, execute
+
+```
+./run.sh 0.2 65536 1234
+```
+
+where the first, second, and third arguements are "connection probability", "total simulation timesteps", and the seed of random numbers.
+
+You'll find the simulation data as well as png files of the plots.
 
 # License
 
