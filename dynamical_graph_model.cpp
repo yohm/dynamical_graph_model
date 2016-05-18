@@ -196,7 +196,7 @@ void DynamicalGraph::Run(uint32_t t_init, uint32_t t_measure) {
 
   for( ; m_currentTime<t_init+t_measure; m_currentTime++) {
     Update();
-    if( m_currentTime % 16 == 0 ) {
+    if( m_currentTime % 128 == 0 ) {
       m_CCsum += CC();
       m_CCcount++;
     }
