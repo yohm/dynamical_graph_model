@@ -190,8 +190,8 @@ private:
 };
 
 //================================================
-DynamicalGraph::DynamicalGraph(uint64_t seed, double t_connectance)
-: m_connectance(t_connectance), m_currentTime(0), m_CCsum(0.0), m_CCcount(0),
+DynamicalGraph::DynamicalGraph(uint64_t seed, double connectance)
+: m_connectance(connectance), m_currentTime(0), m_CCsum(0.0), m_CCcount(0),
   m_densitySum(0.0), m_densityCount(0) {
   pRnd = new boost::mt19937(seed);
 }

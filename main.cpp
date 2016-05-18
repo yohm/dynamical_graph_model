@@ -1,5 +1,3 @@
-//#define DEBUG
-//#define BASIC
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -13,7 +11,7 @@
 int main (int argc, char* argv[]) {
 
   if(argc != 5) {
-    std::cerr << "Usage : ./network-full.out <connectance> <t_init> <t_measure> <seed>" << std::endl;
+    std::cerr << "Usage : ./main.out <connectance> <t_init> <t_measure> <seed>" << std::endl;
     exit(1);
   }
 
