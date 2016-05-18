@@ -33,13 +33,10 @@ void Species::MakeInteractionWith(Species* other, double coefficient) {
 }
 
 void Species::DeleteInteractions( std::set<Species*>& dyingSpecies) {
-  for(std::map<Species*, double>::iterator it = m_incomingInteractions.begin();
-      it != m_incomingInteractions.end(); ++it) {
-    it->first->m_outgoingInteractions.erase(this);
+  for( auto pair : m_incomingInteractions ) {
+    pair.first->m_outgoingInteractions.erase(this);
   }
-  for(std::set<Species*>::iterator it = m_outgoingInteractions.begin();
-      it != m_outgoingInteractions.end(); ++it) {
-    Species* other = *it;
+  for( auto other : m_outgoingInteractions ) {
     std::map<Species*, double>::iterator found = other->m_incomingInteractions.find(this);
     other->m_fitness -= found->second;
     other->m_incomingInteractions.erase(found);
@@ -58,9 +55,8 @@ std::string Species::ToString() {
   std::ostringstream oss;
   oss << "immigrationTime: " << m_immigrationTime << std::endl;
   oss << "incoming:" << std::endl;
-  for( std::map<Species*, double>::iterator it = m_incomingInteractions.begin();
-    it != m_incomingInteractions.end(); ++it) {
-    oss << "  " << it->first << ", " << it->second << std::endl;
+  for( auto pair : m_incomingInteractions ) {
+    oss << "  " << pair.first << ", " << pair.second << std::endl;
   }
   return oss.str();
 }
@@ -168,13 +164,13 @@ void DynamicalGraph::AddOneSpecies() {
 void DynamicalGraph::AddRandomInteractions(Species* s) {
   boost::random::uniform_01<> uniform;
   boost::random::normal_distribution<> nd;
-  for(std::set<Species*>::iterator it = m_species.begin(); it != m_species.end(); ++it) {
+  for( auto pSpecies : m_species ) {
     if( uniform(*pRnd) < m_connectance ) {
-      s->MakeInteractionWith( *it, nd(*pRnd) );
+      s->MakeInteractionWith( pSpecies, nd(*pRnd) );
     }
     if( uniform(*pRnd) < m_connectance ) {
-      (*it)->MakeInteractionWith( s, nd(*pRnd) );
-      if( (*it)->IsGoingExtinct() ) { m_dyingSpecies.insert(*it); }
+      pSpecies->MakeInteractionWith( s, nd(*pRnd) );
+      if( pSpecies->IsGoingExtinct() ) { m_dyingSpecies.insert(pSpecies); }
     }
   }
 
@@ -233,9 +229,8 @@ void DynamicalGraph::Extinct(Species* s) {
 void DynamicalGraph::LifetimeHistoOutput( const char* filename) {
   std::ofstream fout(filename);
 
-  for(std::map<uint32_t, uint32_t>::iterator it = lifetime_histo.begin();
-      it != lifetime_histo.end(); ++it) {
-    fout << it->first << ' ' << it->second << std::endl;
+  for( auto pair : lifetime_histo ) {
+    fout << pair.first << ' ' << pair.second << std::endl;
   }
   fout.close();
 }
@@ -243,9 +238,8 @@ void DynamicalGraph::LifetimeHistoOutput( const char* filename) {
 void DynamicalGraph::ExtinctionSizeHistoOutput( const char* filename) {
   std::ofstream fout(filename);
 
-  for(std::map<uint32_t, uint32_t>::iterator it = extinction_histo.begin();
-      it != extinction_histo.end(); ++it) {
-    fout << it->first << ' ' << it->second << std::endl;
+  for( auto pair : extinction_histo ) {
+    fout << pair.first << ' ' << pair.second << std::endl;
   }
   fout.close();
 }
@@ -253,9 +247,8 @@ void DynamicalGraph::ExtinctionSizeHistoOutput( const char* filename) {
 void DynamicalGraph::DiversityHistoOutput( const char* filename) {
   std::ofstream fout(filename);
 
-  for(std::map<uint32_t, uint32_t>::iterator it = diversity_histo.begin();
-      it != diversity_histo.end(); ++it) {
-    fout << it->first << ' ' << it->second << std::endl;
+  for( auto pair : diversity_histo ) {
+    fout << pair.first << ' ' << pair.second << std::endl;
   }
   fout.close();
 }
