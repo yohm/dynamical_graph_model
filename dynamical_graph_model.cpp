@@ -90,6 +90,27 @@ double Species::LocalCC() const {
 }
 
 //==============================================
+class Histogram {
+public:
+  Histogram() {};
+  std::map<uint32_t, uint32_t> histo;
+
+  void Add( uint32_t x ) {
+    if( histo.find(x) != histo.end() ) {
+      histo[x] += 1;
+    }
+    else {
+      histo[x] = 1;
+    }
+  }
+  void Print( std::ostream& out ) const {
+    for( auto pair : histo ) {
+      out << pair.first << ' ' << pair.second << std::endl;
+    }
+  }
+};
+
+//==============================================
 
 class DynamicalGraph {
 public:
@@ -109,9 +130,9 @@ private:
   boost::mt19937 * pRnd;
   void Update();
 
-  std::map<uint32_t, uint32_t> extinction_histo;
-  std::map<uint32_t, uint32_t> diversity_histo;
-  std::map<uint32_t, uint32_t> lifetime_histo;
+  Histogram extinction_histo;
+  Histogram diversity_histo;
+  Histogram lifetime_histo;
 
   void AddOneSpecies();
   void AddRandomInteractions(Species* new_species);
@@ -150,17 +171,9 @@ void DynamicalGraph::Update() {
   int extinction_size = previous_diversity + 1 - current_diversity;
 
   // calculate histograms
-  if( extinction_histo.find(extinction_size) != extinction_histo.end() ) {
-    extinction_histo[extinction_size] += 1;
-  } else {
-    extinction_histo[extinction_size] = 1;
-  }
+  extinction_histo.Add( extinction_size );
 
-  if( diversity_histo.find(current_diversity) != diversity_histo.end() ) {
-    diversity_histo[current_diversity] += 1;
-  } else {
-    diversity_histo[current_diversity] = 1;
-  }
+  diversity_histo.Add( current_diversity );
 }
 //================================================
 void DynamicalGraph::AddOneSpecies() {
@@ -222,11 +235,7 @@ void DynamicalGraph::Extinct(Species* s) {
 
   int32_t lifetime = m_currentTime - s->ImmigrationTime();
 
-  if( lifetime_histo.find(lifetime) != lifetime_histo.end() ) {
-    lifetime_histo[lifetime] += 1;
-  } else {
-    lifetime_histo[lifetime] = 1;
-  }
+  lifetime_histo.Add( lifetime );
 
   delete s;
 }
@@ -234,28 +243,19 @@ void DynamicalGraph::Extinct(Species* s) {
 //================================================
 void DynamicalGraph::LifetimeHistoOutput( const char* filename) {
   std::ofstream fout(filename);
-
-  for( auto pair : lifetime_histo ) {
-    fout << pair.first << ' ' << pair.second << std::endl;
-  }
+  lifetime_histo.Print( fout );
   fout.close();
 }
 //================================================
 void DynamicalGraph::ExtinctionSizeHistoOutput( const char* filename) {
   std::ofstream fout(filename);
-
-  for( auto pair : extinction_histo ) {
-    fout << pair.first << ' ' << pair.second << std::endl;
-  }
+  extinction_histo.Print( fout );
   fout.close();
 }
 //================================================
 void DynamicalGraph::DiversityHistoOutput( const char* filename) {
   std::ofstream fout(filename);
-
-  for( auto pair : diversity_histo ) {
-    fout << pair.first << ' ' << pair.second << std::endl;
-  }
+  diversity_histo.Print( fout );
   fout.close();
 }
 //================================================
