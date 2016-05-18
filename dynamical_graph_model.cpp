@@ -3,6 +3,7 @@
 #include <sstream>
 #include <set>
 #include <map>
+#include <algorithm>
 #include <boost/cstdint.hpp>
 #include <boost/random.hpp>
 
@@ -17,6 +18,7 @@ public:
   std::string ToString();
   double Fitness() { return m_fitness; }
   uint32_t ImmigrationTime() { return m_immigrationTime; }
+  double LocalCC() const;
 private:
   const uint32_t m_immigrationTime;
   std::map<Species*, double> m_incomingInteractions;
@@ -63,6 +65,25 @@ std::string Species::ToString() {
   return oss.str();
 }
 
+double Species::LocalCC() const {
+  std::set<Species*> neighbors = m_outgoingInteractions;
+  for( auto pair : m_incomingInteractions ) {
+    neighbors.insert( pair.first );
+  }
+  size_t k = neighbors.size();
+  if( k <= 1 ) { return 0.0; }
+
+  size_t num_triads = 0;
+  for( auto pSpecies : neighbors ) {
+    std::set<Species*> nn = pSpecies->m_outgoingInteractions;
+    std::vector<Species*> common;
+    std::set_intersection( neighbors.begin(), neighbors.end(), nn.begin(), nn.end(), std::back_inserter(common) );
+    num_triads += common.size();
+  }
+
+  return ( static_cast<double>(num_triads) / (k*(k-1)) );
+}
+
 //==============================================
 
 class DynamicalGraph {
@@ -93,6 +114,7 @@ private:
   bool RemoveNegativeFitnessSpecies();
   void Extinct(Species* s);
   int Diversity();
+  double CC();
 };
 
 //================================================
@@ -107,7 +129,7 @@ void DynamicalGraph::Run(uint32_t tmax) {
     Update();
     if( m_currentTime%1024 == 0 ) {
       std::cerr << "t : " << m_currentTime << std::endl;
-      fout << m_currentTime << ' ' << Diversity() << std::endl;
+      fout << m_currentTime << ' ' << Diversity() << ' ' << CC() << std::endl;
     }
   }
   fout.close();
@@ -240,4 +262,14 @@ void DynamicalGraph::DiversityHistoOutput( const char* filename) {
 //================================================
 int DynamicalGraph::Diversity() {
   return m_species.size();
+}
+
+//================================================
+double DynamicalGraph::CC() {
+  if( m_species.empty() ) { return 0.0; }
+  double total = 0.0;
+  for( auto s : m_species ) {
+    total += s->LocalCC();
+  }
+  return total / m_species.size();
 }

@@ -1,5 +1,5 @@
 CPP=g++
-OPT=-O3 -Wall -DNDEBUG -Wno-c++11-extensions
+OPT=-O3 -Wall -DNDEBUG -std=c++11
 # OPT=-O0 -Wall -pg
 INCLUDE=
 
