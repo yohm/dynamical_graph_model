@@ -192,20 +192,19 @@ bool DynamicalGraph::RemoveNegativeFitnessSpecies() {
   // remove negative fitness species
   bool negative_exists = false;
   // Find minimum
-  typedef std::set<Species*>::iterator SETIT;
-  SETIT it_min = m_dyingSpecies.begin();
+  Species* pMinSpecies = NULL;
   double min = 0.0;
-  for(SETIT it = m_dyingSpecies.begin(); it != m_dyingSpecies.end(); ++it) {
-    double f = (*it)->Fitness();
+  for( auto pSpecies : m_dyingSpecies ) {
+    double f = pSpecies->Fitness();
     if( min > f ) {
       min = f;
-      it_min = it;
+      pMinSpecies = pSpecies;
       negative_exists = true;
     }
   }
   if( negative_exists ) {
-    Extinct(*it_min);
-    m_dyingSpecies.erase(it_min);
+    Extinct(pMinSpecies);
+    m_dyingSpecies.erase(pMinSpecies);
   }
   return negative_exists;
 }
