@@ -199,7 +199,6 @@ void DynamicalGraph::Selection() {
 //================================================
 bool DynamicalGraph::RemoveNegativeFitnessSpecies() {
   // remove negative fitness species
-  bool negative_exists = false;
   // Find minimum
   Species* pMinSpecies = NULL;
   double min = 0.0;
@@ -208,14 +207,13 @@ bool DynamicalGraph::RemoveNegativeFitnessSpecies() {
     if( min > f ) {
       min = f;
       pMinSpecies = pSpecies;
-      negative_exists = true;
     }
   }
-  if( negative_exists ) {
+  if( pMinSpecies != NULL ) {
     Extinct(pMinSpecies);
     m_dyingSpecies.erase(pMinSpecies);
   }
-  return negative_exists;
+  return (pMinSpecies != NULL);
 }
 //================================================
 void DynamicalGraph::Extinct(Species* s) {
