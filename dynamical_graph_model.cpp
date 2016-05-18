@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <boost/cstdint.hpp>
 #include <boost/random.hpp>
+#include <boost/function_output_iterator.hpp>
 
 //================================================
 class Species {
@@ -79,11 +80,10 @@ double Species::LocalCC() const {
   if( k <= 1 ) { return 0.0; }
 
   size_t num_triads = 0;
+  auto counter = [&num_triads](Species*){ num_triads++; };
   for( auto pSpecies : neighbors ) {
     SpeciesSet nn = pSpecies->m_outgoingInteractions;
-    std::vector<Species*> common;
-    std::set_intersection( neighbors.begin(), neighbors.end(), nn.begin(), nn.end(), std::back_inserter(common), Species::comp() );
-    num_triads += common.size();
+    std::set_intersection( neighbors.begin(), neighbors.end(), nn.begin(), nn.end(), boost::make_function_output_iterator(counter), Species::comp() );
   }
 
   return ( static_cast<double>(num_triads) / (k*(k-1)) );
