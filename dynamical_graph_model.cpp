@@ -30,6 +30,8 @@ public:
   double Fitness() { return m_fitness; }
   uint32_t ImmigrationTime() { return m_immigrationTime; }
   double LocalCC() const;
+  size_t InDegree() const;
+  size_t OutDegree() const;
 private:
   const uint32_t m_immigrationTime;
   SpeciesMap m_incomingInteractions;
@@ -102,6 +104,14 @@ double Species::LocalCC() const {
   return ( static_cast<double>(num_triads) / (k*(k-1)) );
 }
 
+size_t Species::InDegree() const {
+  return m_incomingInteractions.size();
+}
+
+size_t Species::OutDegree() const {
+  return m_outgoingInteractions.size();
+}
+
 void Species::MakeOutLinkCache() {
   if( m_cacheReady == false ) {
     m_outLinkCache.clear();
@@ -146,6 +156,7 @@ public:
   void DiversityHistoOutput( const char* filename);
   void ExtinctionSizeHistoOutput( const char* filename);
   double AverageDiversity() const;
+  double AverageLinkDensity() const;
   double AverageCC() const;
 private:
   const double m_connectance;
@@ -158,6 +169,8 @@ private:
   Histogram lifetime_histo;
   double m_CCsum;
   size_t m_CCcount;
+  double m_densitySum;
+  size_t m_densityCount;
 
   void Update();
   void ClearHisto() {
@@ -172,12 +185,14 @@ private:
   bool RemoveNegativeFitnessSpecies();
   void Extinct(Species* s);
   int Diversity();
+  double LinkDensity();
   double CC();
 };
 
 //================================================
 DynamicalGraph::DynamicalGraph(uint64_t seed, double t_connectance)
-: m_connectance(t_connectance), m_currentTime(0), m_CCsum(0.0), m_CCcount(0) {
+: m_connectance(t_connectance), m_currentTime(0), m_CCsum(0.0), m_CCcount(0),
+  m_densitySum(0.0), m_densityCount(0) {
   pRnd = new boost::mt19937(seed);
 }
 //================================================
@@ -188,7 +203,9 @@ void DynamicalGraph::Run(uint32_t t_init, uint32_t t_measure) {
     Update();
     if( m_currentTime%1024 == 0 ) {
       std::cerr << "t : " << m_currentTime << std::endl;
-      fout << m_currentTime << ' ' << Diversity() << ' ' << CC() << std::endl;
+      fout << m_currentTime << ' ' << Diversity()
+        << ' ' << LinkDensity()
+        << ' ' << CC() << std::endl;
     }
   }
 
@@ -196,13 +213,17 @@ void DynamicalGraph::Run(uint32_t t_init, uint32_t t_measure) {
 
   for( ; m_currentTime<t_init+t_measure; m_currentTime++) {
     Update();
+    m_densitySum += LinkDensity();
+    m_densityCount++;
     if( m_currentTime % 128 == 0 ) {
       m_CCsum += CC();
       m_CCcount++;
     }
     if( m_currentTime%1024 == 0 ) {
       std::cerr << "t : " << m_currentTime << std::endl;
-      fout << m_currentTime << ' ' << Diversity() << ' ' << CC() << std::endl;
+      fout << m_currentTime << ' ' << Diversity()
+        << ' ' << LinkDensity()
+        << ' ' << CC() << std::endl;
     }
   }
   fout.close();
@@ -321,6 +342,15 @@ double DynamicalGraph::CC() {
   return total / m_species.size();
 }
 //================================================
+double DynamicalGraph::LinkDensity() {
+  size_t total = 0;
+  for( auto s : m_species ) {
+    total += s->OutDegree();
+  }
+  size_t n = m_species.size();
+  return static_cast<double>(total) / (n*(n-1));
+}
+//================================================
 double DynamicalGraph::AverageDiversity() const {
   uint64_t sum = 0;
   uint64_t count = 0;
@@ -329,6 +359,10 @@ double DynamicalGraph::AverageDiversity() const {
     count += key_freq.second;
   }
   return static_cast<double>(sum)/count;
+}
+//================================================
+double DynamicalGraph::AverageLinkDensity() const {
+  return m_densitySum / m_densityCount;
 }
 //================================================
 double DynamicalGraph::AverageCC() const {
