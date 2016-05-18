@@ -11,8 +11,17 @@
 class Species {
 public:
   Species(uint32_t immigrationTime) : m_immigrationTime(immigrationTime), m_fitness(0.0) {};
+
+  struct comp {
+    bool operator() (const Species* lhs, const Species* rhs) const {
+      return lhs->m_immigrationTime < rhs->m_immigrationTime;
+    }
+  };
+  typedef std::map<Species*, double, comp> SpeciesMap;
+  typedef std::set<Species*, comp> SpeciesSet;
+
   void MakeInteractionWith(Species* other, double coefficient);
-  void DeleteInteractions( std::set<Species*> &dyingSpecies); // delete all the interactions
+  void DeleteInteractions( SpeciesSet& dyingSpecies); // delete all the interactions
   // insert species that can go extinct into dyingSpecies
   bool IsGoingExtinct();
   std::string ToString();
@@ -21,8 +30,8 @@ public:
   double LocalCC() const;
 private:
   const uint32_t m_immigrationTime;
-  std::map<Species*, double> m_incomingInteractions;
-  std::set<Species*> m_outgoingInteractions;
+  SpeciesMap m_incomingInteractions;
+  SpeciesSet m_outgoingInteractions;
   double m_fitness;
 };
 
@@ -32,12 +41,12 @@ void Species::MakeInteractionWith(Species* other, double coefficient) {
   other->m_outgoingInteractions.insert(this);
 }
 
-void Species::DeleteInteractions( std::set<Species*>& dyingSpecies) {
+void Species::DeleteInteractions( SpeciesSet& dyingSpecies) {
   for( auto pair : m_incomingInteractions ) {
     pair.first->m_outgoingInteractions.erase(this);
   }
   for( auto other : m_outgoingInteractions ) {
-    std::map<Species*, double>::iterator found = other->m_incomingInteractions.find(this);
+    auto found = other->m_incomingInteractions.find(this);
     other->m_fitness -= found->second;
     other->m_incomingInteractions.erase(found);
 
@@ -62,7 +71,7 @@ std::string Species::ToString() {
 }
 
 double Species::LocalCC() const {
-  std::set<Species*> neighbors = m_outgoingInteractions;
+  SpeciesSet neighbors = m_outgoingInteractions;
   for( auto pair : m_incomingInteractions ) {
     neighbors.insert( pair.first );
   }
@@ -71,9 +80,9 @@ double Species::LocalCC() const {
 
   size_t num_triads = 0;
   for( auto pSpecies : neighbors ) {
-    std::set<Species*> nn = pSpecies->m_outgoingInteractions;
+    SpeciesSet nn = pSpecies->m_outgoingInteractions;
     std::vector<Species*> common;
-    std::set_intersection( neighbors.begin(), neighbors.end(), nn.begin(), nn.end(), std::back_inserter(common) );
+    std::set_intersection( neighbors.begin(), neighbors.end(), nn.begin(), nn.end(), std::back_inserter(common), Species::comp() );
     num_triads += common.size();
   }
 
@@ -93,8 +102,8 @@ public:
 private:
   const double m_connectance;
 
-  std::set<Species*> m_species;
-  std::set<Species*> m_dyingSpecies;
+  Species::SpeciesSet m_species;
+  Species::SpeciesSet m_dyingSpecies;
   uint32_t m_currentTime;
 
   boost::mt19937 * pRnd;
@@ -261,7 +270,8 @@ double DynamicalGraph::CC() {
   if( m_species.empty() ) { return 0.0; }
   double total = 0.0;
   for( auto s : m_species ) {
-    total += s->LocalCC();
+    double d = s->LocalCC();
+    total += d;
   }
   return total / m_species.size();
 }
