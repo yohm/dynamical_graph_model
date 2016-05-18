@@ -1,7 +1,7 @@
 set terminal png
 set output "lifetime_logbin.png"
 
-unset key
+set key
 set xlabel "Lifetime"
 set ylabel "Frequency"
 
@@ -20,5 +20,6 @@ h(x)=c+log10( exp(-(10.0**x/t)**d) )
 i(x)=10.0**c*exp(-(x/t)**d)
 fit [*:*] h(x) "lifetime_logbin.dat" u (log10($1)):(log10($2)) via c,t,d
 
+set label sprintf("exponent = %.2f",d) at graph 0.1, graph 0.1
 p "lifetime_logbin.dat" u 1:2 title "Simulation", i(x) title "Stretched-exp. fit"
 
