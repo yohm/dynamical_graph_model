@@ -121,19 +121,21 @@ public:
   void LifetimeHistoOutput( const char* filename);
   void DiversityHistoOutput( const char* filename);
   void ExtinctionSizeHistoOutput( const char* filename);
+  double AverageDiversity() const;
+  double AverageCC() const;
 private:
   const double m_connectance;
-
   Species::SpeciesSet m_species;
   Species::SpeciesSet m_dyingSpecies;
   uint32_t m_currentTime;
-
   boost::mt19937 * pRnd;
-  void Update();
-
   Histogram extinction_histo;
   Histogram diversity_histo;
   Histogram lifetime_histo;
+  double m_CCsum;
+  size_t m_CCcount;
+
+  void Update();
   void ClearHisto() {
     extinction_histo.Clear();
     diversity_histo.Clear();
@@ -151,7 +153,7 @@ private:
 
 //================================================
 DynamicalGraph::DynamicalGraph(uint64_t seed, double t_connectance)
-: m_connectance(t_connectance), m_currentTime(0) {
+: m_connectance(t_connectance), m_currentTime(0), m_CCsum(0.0), m_CCcount(0) {
   pRnd = new boost::mt19937(seed);
 }
 //================================================
@@ -170,6 +172,10 @@ void DynamicalGraph::Run(uint32_t t_init, uint32_t t_measure) {
 
   for( ; m_currentTime<t_init+t_measure; m_currentTime++) {
     Update();
+    if( m_currentTime % 16 == 0 ) {
+      m_CCsum += CC();
+      m_CCcount++;
+    }
     if( m_currentTime%1024 == 0 ) {
       std::cerr << "t : " << m_currentTime << std::endl;
       fout << m_currentTime << ' ' << Diversity() << ' ' << CC() << std::endl;
@@ -290,3 +296,18 @@ double DynamicalGraph::CC() {
   }
   return total / m_species.size();
 }
+//================================================
+double DynamicalGraph::AverageDiversity() const {
+  uint64_t sum = 0;
+  uint64_t count = 0;
+  for( auto key_freq : diversity_histo.histo ) {
+    sum += key_freq.first * key_freq.second;
+    count += key_freq.second;
+  }
+  return static_cast<double>(sum)/count;
+}
+//================================================
+double DynamicalGraph::AverageCC() const {
+  return m_CCsum / m_CCcount;
+}
+

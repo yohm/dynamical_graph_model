@@ -35,6 +35,10 @@ int main (int argc, char* argv[]) {
   eco.LifetimeHistoOutput("lifetime.dat");
   eco.DiversityHistoOutput("diversity_histo.dat");
   eco.ExtinctionSizeHistoOutput("extinction_histo.dat");
+  std::ofstream json("_output.json");
+  json << "{ \"diversity\": " << eco.AverageDiversity()
+       << ", \"CC\": " << eco.AverageCC() << " }" << std::endl;
+  json.close();
   std::cerr << "elapsed time : " << t.elapsed() << std::endl;
 
   return 0;
