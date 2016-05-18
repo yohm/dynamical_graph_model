@@ -38,10 +38,10 @@ make
 After the program was built, execute
 
 ```
-./run.sh 0.2 65536 1234
+./run.sh 0.2 1024 65536 1234
 ```
 
-where the first, second, and third arguements are "connection probability", "total simulation timesteps", and the seed of random numbers, respectively.
+where the arguements specify "connection probability", "initial warm-up timesteps", "simulation timesteps", and the seed of random numbers, respectively.
 
 You'll find the simulation data as well as png files of the plots.
 

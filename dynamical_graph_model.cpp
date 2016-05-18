@@ -108,6 +108,7 @@ public:
       out << pair.first << ' ' << pair.second << std::endl;
     }
   }
+  void Clear() { histo.clear(); }
 };
 
 //==============================================
@@ -116,7 +117,7 @@ class DynamicalGraph {
 public:
   DynamicalGraph( uint64_t seed, double connectance);
   ~DynamicalGraph() {};
-  void Run( uint32_t tmax);
+  void Run( uint32_t t_init, uint32_t t_measure);
   void LifetimeHistoOutput( const char* filename);
   void DiversityHistoOutput( const char* filename);
   void ExtinctionSizeHistoOutput( const char* filename);
@@ -133,6 +134,11 @@ private:
   Histogram extinction_histo;
   Histogram diversity_histo;
   Histogram lifetime_histo;
+  void ClearHisto() {
+    extinction_histo.Clear();
+    diversity_histo.Clear();
+    lifetime_histo.Clear();
+  };
 
   void AddOneSpecies();
   void AddRandomInteractions(Species* new_species);
@@ -149,9 +155,20 @@ DynamicalGraph::DynamicalGraph(uint64_t seed, double t_connectance)
   pRnd = new boost::mt19937(seed);
 }
 //================================================
-void DynamicalGraph::Run(uint32_t tmax) {
+void DynamicalGraph::Run(uint32_t t_init, uint32_t t_measure) {
   std::ofstream fout("timeseries.dat");
-  for(m_currentTime=0; m_currentTime<tmax; m_currentTime++) {
+
+  for( ; m_currentTime<t_init; m_currentTime++) {
+    Update();
+    if( m_currentTime%1024 == 0 ) {
+      std::cerr << "t : " << m_currentTime << std::endl;
+      fout << m_currentTime << ' ' << Diversity() << ' ' << CC() << std::endl;
+    }
+  }
+
+  ClearHisto();
+
+  for( ; m_currentTime<t_init+t_measure; m_currentTime++) {
     Update();
     if( m_currentTime%1024 == 0 ) {
       std::cerr << "t : " << m_currentTime << std::endl;

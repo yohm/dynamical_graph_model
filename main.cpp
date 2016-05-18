@@ -12,24 +12,26 @@
 
 int main (int argc, char* argv[]) {
 
-  if(argc != 4) {
-    std::cerr << "Usage : ./network-full.out <connectance> <tmax> <seed>" << std::endl;
+  if(argc != 5) {
+    std::cerr << "Usage : ./network-full.out <connectance> <t_init> <t_measure> <seed>" << std::endl;
     exit(1);
   }
 
   const double connectance = boost::lexical_cast<double>(argv[1]);
-  const uint32_t tmax = boost::lexical_cast<uint32_t>(argv[2]);
-  const uint64_t seed = boost::lexical_cast<uint64_t>(argv[3]);
+  const uint32_t t_init = boost::lexical_cast<uint32_t>(argv[2]);
+  const uint32_t t_measure = boost::lexical_cast<uint32_t>(argv[3]);
+  const uint64_t seed = boost::lexical_cast<uint64_t>(argv[4]);
   
   std::cerr << "Lists of given parameters are as follows:" << std::endl
             << "connectance:\t" << connectance << std::endl
-            << "tmax:\t" << tmax << std::endl
+            << "t_init:\t" << t_init << std::endl
+            << "t_measure:\t" << t_measure << std::endl
             << "seed:\t" << seed << std::endl;
 
   //ofstreams
   DynamicalGraph eco( seed, connectance);
   boost::timer t;
-  eco.Run(tmax);
+  eco.Run(t_init, t_measure);
   eco.LifetimeHistoOutput("lifetime.dat");
   eco.DiversityHistoOutput("diversity_histo.dat");
   eco.ExtinctionSizeHistoOutput("extinction_histo.dat");
