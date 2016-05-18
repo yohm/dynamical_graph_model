@@ -11,7 +11,8 @@
 //================================================
 class Species {
 public:
-  Species(uint32_t immigrationTime) : m_immigrationTime(immigrationTime), m_fitness(0.0) {};
+  Species(uint32_t immigrationTime) :
+    m_immigrationTime(immigrationTime), m_fitness(0.0), m_cacheReady(false) {};
 
   struct comp {
     bool operator() (const Species* lhs, const Species* rhs) const {
@@ -34,17 +35,22 @@ private:
   SpeciesMap m_incomingInteractions;
   SpeciesSet m_outgoingInteractions;
   double m_fitness;
+  std::vector<uint32_t> m_outLinkCache;
+  bool m_cacheReady;
+  void MakeOutLinkCache();
 };
 
 void Species::MakeInteractionWith(Species* other, double coefficient) {
   m_incomingInteractions.insert( std::make_pair(other, coefficient) );
   m_fitness += coefficient;
   other->m_outgoingInteractions.insert(this);
+  other->m_cacheReady = false;
 }
 
 void Species::DeleteInteractions( SpeciesSet& dyingSpecies) {
   for( auto pair : m_incomingInteractions ) {
     pair.first->m_outgoingInteractions.erase(this);
+    pair.first->m_cacheReady = false;
   }
   for( auto other : m_outgoingInteractions ) {
     auto found = other->m_incomingInteractions.find(this);
@@ -79,14 +85,32 @@ double Species::LocalCC() const {
   size_t k = neighbors.size();
   if( k <= 1 ) { return 0.0; }
 
+  std::vector<uint32_t> neighbor_ids;
+  for( auto n: neighbors ) {
+    n->MakeOutLinkCache();
+    neighbor_ids.push_back( n->m_immigrationTime );
+  }
+
   size_t num_triads = 0;
-  auto counter = [&num_triads](Species*){ num_triads++; };
+  auto counter = [&num_triads](uint32_t){ num_triads++; };
   for( auto pSpecies : neighbors ) {
-    SpeciesSet nn = pSpecies->m_outgoingInteractions;
-    std::set_intersection( neighbors.begin(), neighbors.end(), nn.begin(), nn.end(), boost::make_function_output_iterator(counter), Species::comp() );
+    std::set_intersection( neighbor_ids.begin(), neighbor_ids.end(),
+        pSpecies->m_outLinkCache.begin(), pSpecies->m_outLinkCache.end(),
+        boost::make_function_output_iterator(counter) );
   }
 
   return ( static_cast<double>(num_triads) / (k*(k-1)) );
+}
+
+void Species::MakeOutLinkCache() {
+  if( m_cacheReady == false ) {
+    m_outLinkCache.clear();
+    for( auto s: m_outgoingInteractions ) {
+      uint32_t t = s->m_immigrationTime;
+      m_outLinkCache.push_back(t);
+    }
+    m_cacheReady = true;
+  }
 }
 
 //==============================================
