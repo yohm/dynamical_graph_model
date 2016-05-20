@@ -292,7 +292,6 @@ bool DynamicalGraph::RemoveNegativeFitnessSpecies() {
   }
   if( pMinSpecies != NULL ) {
     Extinct(pMinSpecies);
-    m_dyingSpecies.erase(pMinSpecies);
   }
   return (pMinSpecies != NULL);
 }
@@ -304,6 +303,7 @@ void DynamicalGraph::Extinct(Species* s) {
   int32_t lifetime = m_currentTime - s->ImmigrationTime();
 
   lifetime_histo.Add( lifetime );
+  m_dyingSpecies.erase(s);
 
   delete s;
 }
