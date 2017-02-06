@@ -8,15 +8,14 @@ http://iopscience.iop.org/article/10.1088/1367-2630/12/6/063021
 
 ## Prerequisites
 
-For analysis, ruby and gnuplot script are used.
-Install these using your package-management system.
-For Mac OS, run
+The main simulation program is written in standard C++.
+
+For making plots, Python3 and `numpy` and `matplotlib` libraries are needed.
+One of the simplest way to install these would be using miniconda or anaconda.
 
 ```
-brew install gnuplot
+conda install numpy matplotlib
 ```
-
-to install gnuplot. Ruby is installed by default.
 
 ## Build & Run
 
