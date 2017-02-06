@@ -8,15 +8,6 @@ http://iopscience.iop.org/article/10.1088/1367-2630/12/6/063021
 
 ## Prerequisites
 
-The simulation code is written in C++ using boost library.
-Please install boost as well as C++ compiler on your system.
-
-If you are using Mac, just run
-
-```
-brew install boost
-```
-
 For analysis, ruby and gnuplot script are used.
 Install these using your package-management system.
 For Mac OS, run
