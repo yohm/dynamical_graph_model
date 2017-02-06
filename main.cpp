@@ -3,9 +3,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
-#include <boost/lexical_cast.hpp>
-#include <boost/format.hpp>
-#include <boost/timer.hpp>
 #include "dynamical_graph_model.cpp"
 
 int main (int argc, char* argv[]) {
@@ -15,10 +12,10 @@ int main (int argc, char* argv[]) {
     exit(1);
   }
 
-  const double connectance = boost::lexical_cast<double>(argv[1]);
-  const uint32_t t_init = boost::lexical_cast<uint32_t>(argv[2]);
-  const uint32_t t_measure = boost::lexical_cast<uint32_t>(argv[3]);
-  const uint64_t seed = boost::lexical_cast<uint64_t>(argv[4]);
+  const double connectance = std::stod(argv[1]);
+  const uint32_t t_init = std::stoul(argv[2]);
+  const uint32_t t_measure = std::stoul(argv[3]);
+  const uint64_t seed = std::stoull(argv[4]);
   
   std::cerr << "Lists of given parameters are as follows:" << std::endl
             << "connectance:\t" << connectance << std::endl
@@ -27,18 +24,19 @@ int main (int argc, char* argv[]) {
             << "seed:\t" << seed << std::endl;
 
   //ofstreams
-  DynamicalGraph eco( seed, connectance);
-  boost::timer t;
-  eco.Run(t_init, t_measure);
-  eco.LifetimeHistoOutput("lifetime.dat");
-  eco.DiversityHistoOutput("diversity_histo.dat");
-  eco.ExtinctionSizeHistoOutput("extinction_histo.dat");
+  DynamicalGraph dg( seed, connectance);
+  std::clock_t start = std::clock();
+  dg.Run(t_init, t_measure);
+  dg.LifetimeHistoOutput("lifetime.dat");
+  dg.DiversityHistoOutput("diversity_histo.dat");
+  dg.ExtinctionSizeHistoOutput("extinction_histo.dat");
   std::ofstream json("_output.json");
-  json << "{ \"diversity\": " << eco.AverageDiversity()
-       << ", \"link_density\": " << eco.AverageLinkDensity()
-       << ", \"CC\": " << eco.AverageCC() << " }" << std::endl;
+  json << "{ \"diversity\": " << dg.AverageDiversity()
+       << ", \"link_density\": " << dg.AverageLinkDensity()
+       << ", \"CC\": " << dg.AverageCC() << " }" << std::endl;
   json.close();
-  std::cerr << "elapsed time : " << t.elapsed() << std::endl;
+  std::clock_t end = std::clock();
+  std::cerr << "elapsed time : " << static_cast<double>(end-start)/CLOCKS_PER_SEC << std::endl;
 
   return 0;
 }

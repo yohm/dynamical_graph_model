@@ -1,12 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cstdint>
 #include <set>
 #include <map>
 #include <algorithm>
-#include <boost/cstdint.hpp>
-#include <boost/random.hpp>
-#include <boost/function_output_iterator.hpp>
+#include <iterator>
+#include <random>
 
 //================================================
 class Species {
@@ -93,13 +93,13 @@ double Species::LocalCC() const {
     neighbor_ids.push_back( n->m_immigrationTime );
   }
 
-  size_t num_triads = 0;
-  auto counter = [&num_triads](uint32_t){ num_triads++; };
+  std::vector<uint32_t> vIntersec;
   for( auto pSpecies : neighbors ) {
     std::set_intersection( neighbor_ids.begin(), neighbor_ids.end(),
         pSpecies->m_outLinkCache.begin(), pSpecies->m_outLinkCache.end(),
-        boost::make_function_output_iterator(counter) );
+        std::back_inserter( vIntersec ) );
   }
+  size_t num_triads = vIntersec.size();
 
   return ( static_cast<double>(num_triads) / (k*(k-1)) );
 }
@@ -163,7 +163,7 @@ private:
   Species::SpeciesSet m_species;
   Species::SpeciesSet m_dyingSpecies;
   uint32_t m_currentTime;
-  boost::mt19937 * pRnd;
+  std::mt19937 * pRnd;
   Histogram extinction_histo;
   Histogram diversity_histo;
   Histogram lifetime_histo;
@@ -193,7 +193,7 @@ private:
 DynamicalGraph::DynamicalGraph(uint64_t seed, double connectance)
 : m_connectance(connectance), m_currentTime(0), m_CCsum(0.0), m_CCcount(0),
   m_densitySum(0.0), m_densityCount(0) {
-  pRnd = new boost::mt19937(seed);
+  pRnd = new std::mt19937(seed);
 }
 //================================================
 void DynamicalGraph::Run(uint32_t t_init, uint32_t t_measure) {
@@ -252,8 +252,9 @@ void DynamicalGraph::AddOneSpecies() {
 
 //=================================================
 void DynamicalGraph::AddRandomInteractions(Species* s) {
-  boost::random::uniform_01<> uniform;
-  boost::random::normal_distribution<> nd;
+  std::uniform_real_distribution<double> uniform(0.0,1.0);
+  std::normal_distribution<double> nd;
+
   for( auto pSpecies : m_species ) {
     if( uniform(*pRnd) < m_connectance ) {
       s->MakeInteractionWith( pSpecies, nd(*pRnd) );
