@@ -344,11 +344,12 @@ double DynamicalGraph::CC() {
 }
 //================================================
 double DynamicalGraph::LinkDensity() {
+  size_t n = m_species.size();
+  if( n <= 1 ) { return 0.0; }
   size_t total = 0;
   for( auto s : m_species ) {
     total += s->OutDegree();
   }
-  size_t n = m_species.size();
   return static_cast<double>(total) / (n*(n-1));
 }
 //================================================
