@@ -35,6 +35,16 @@ where the arguements specify "connection probability", "initial warm-up timestep
 
 You'll find the simulation data as well as png files of the plots.
 
+## Registering OACIS
+
+After you build the program, run the following command to register the simulator to OACIS.
+
+```
+$OACIS_ROOT/bin/oacis_ruby register_oacis.rb
+```
+
+Here `$OACIS_ROOT` refers to the path of OACIS.
+
 # License
 
 The MIT License (MIT)
