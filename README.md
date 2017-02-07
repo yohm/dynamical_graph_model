@@ -45,6 +45,12 @@ $OACIS_ROOT/bin/oacis_ruby register_oacis.rb
 
 Here `$OACIS_ROOT` refers to the path of OACIS.
 
+If you are using the docker image of OACIS, the following command registers the simulator to the OACIS running in the container. Please use `oacis/oacis_jupyter` since it contains Python environments.
+
+```
+docker exec -it -u oacis my_oacis bash -c "git clone https://github.com/yohm/dynamical_graph_model.git && dynamical_graph_model/install.sh"
+```
+
 # License
 
 The MIT License (MIT)
